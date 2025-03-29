@@ -97,6 +97,46 @@ function PartyList() {
 
   return $ul;
 }
+/** A form to edit party details */
+function PartyForm() {
+  const $form = document.createElement("form");
+  $form.innerHTML = `
+    <h3>Edit Party Details</h3>
+    <label for="name">Party Name:</label>
+    <input type="text" id="name" value="${selectedParty?.name || ""}" />
+    <label for="description">Description:</label>
+    <textarea id="description">${selectedParty?.description || ""}</textarea>
+    <label for="date">Date:</label>
+    <input type="date" id="date" value="${
+      selectedParty?.date?.slice(0, 10) || ""
+    }" />
+    <label for="location">Location:</label>
+    <input type="text" id="location" value="${selectedParty?.location || ""}" />
+    <button type="submit">Save Changes</button>
+  `;
+
+  $form.addEventListener("submit", (e) => {
+    e.preventDefault();
+    saveParty();
+  });
+
+  return $form;
+}
+
+/** Delete party functionality */
+async function deleteParty() {
+  if (selectedParty) {
+    try {
+      await fetch(API + "/events/" + selectedParty.id, {
+        method: "DELETE",
+      });
+      selectedParty = null; // Reset selected party after deletion
+      await getParties(); // Refresh the party list
+    } catch (e) {
+      console.error("Error deleting party:", e);
+    }
+  }
+}
 /**
  * Dispalys detailed information about the selected party
  *
