@@ -1,33 +1,37 @@
 // === Constants ===
 const BASE = "https://fsa-crud-2aa9294fe819.herokuapp.com/api";
-const COHORT = ""; // Make sure to change this!
+const COHORT = "/2109-CPU-RM-WEB-PT";
 const API = BASE + COHORT;
 
 // === State ===
 let parties = [];
-let selectedParty;
+let selectedParty = null;
 let rsvps = [];
 let guests = [];
 
 /** Updates state with all parties from the API */
 async function getParties() {
   try {
-    const response = await fetch(API + "/events");
-    const result = await response.json();
-    parties = result.data;
-    render();
+    const response = await fetch(API + "/events"); // fetch party data
+    const result = await response.json(); //convert response to JSON
+    parties = result.data; //store retrieved parties in state
+    render(); // re-render UI with updated data
   } catch (e) {
     console.error(e);
   }
 }
 
-/** Updates state with a single party from the API */
+/**
+ * Updates state with a single party from the API
+ *
+ * @param {number} id
+ */
 async function getParty(id) {
   try {
-    const response = await fetch(API + "/events/" + id);
-    const result = await response.json();
-    selectedParty = result.data;
-    render();
+    const response = await fetch(API + "/events/" + id); //fetch party details
+    const result = await response.json(); //convert response to JSON
+    selectedParty = result.data; // store selected party in state
+    render(); //re-reder UI with updated data
   } catch (e) {
     console.error(e);
   }
@@ -36,10 +40,10 @@ async function getParty(id) {
 /** Updates state with all RSVPs from the API */
 async function getRsvps() {
   try {
-    const response = await fetch(API + "/rsvps");
-    const result = await response.json();
-    rsvps = result.data;
-    render();
+    const response = await fetch(API + "/rsvps"); //fetch RSVP data
+    const result = await response.json(); //convert response to JSON
+    rsvps = result.data; //store RSVPs in state
+    render(); //re-render UI with updated data
   } catch (e) {
     console.error(e);
   }
@@ -48,10 +52,10 @@ async function getRsvps() {
 /** Updates state with all guests from the API */
 async function getGuests() {
   try {
-    const response = await fetch(API + "/guests");
-    const result = await response.json();
-    guests = result.data;
-    render();
+    const response = await fetch(API + "/guests"); //fetch guest data
+    const result = await response.json(); // conver response to JSON
+    guests = result.data; //store guests in state
+    render(); //re-render UI with updated data
   } catch (e) {
     console.error(e);
   }
@@ -59,14 +63,20 @@ async function getGuests() {
 
 // === Components ===
 
+/**
+ * Party name that shows more details about the party when clicked
+ *
+ * @param {Object} party - party object containing name and ID
+ * @returns {HTMLElement} - list item element
+ */
 /** Party name that shows more details about the party when clicked */
 function PartyListItem(party) {
   const $li = document.createElement("li");
-
+  //highlight the selected party
   if (party.id === selectedParty?.id) {
     $li.classList.add("selected");
   }
-
+  //add link to view party details
   $li.innerHTML = `
     <a href="#selected">${party.name}</a>
   `;
@@ -74,18 +84,24 @@ function PartyListItem(party) {
   return $li;
 }
 
-/** A list of names of all parties */
+/**
+ * creates a list of all parties
+ * @returns {HTMLElement} - unordered list element with party names
+ */
 function PartyList() {
   const $ul = document.createElement("ul");
   $ul.classList.add("parties");
-
+  // map each party to a list item
   const $parties = parties.map(PartyListItem);
   $ul.replaceChildren(...$parties);
 
   return $ul;
 }
-
-/** Detailed information about the selected party */
+/**
+ * Dispalys detailed information about the selected party
+ *
+ * @returns {HTMLElement}
+ */
 function SelectedParty() {
   if (!selectedParty) {
     const $p = document.createElement("p");
@@ -103,14 +119,18 @@ function SelectedParty() {
     <p>${selectedParty.description}</p>
     <GuestList></GuestList>
   `;
+  //replace GuestList placeholder with actual component
   $party.querySelector("GuestList").replaceWith(GuestList());
 
   return $party;
 }
-
-/** List of guests attending the selected party */
+/**
+ * creates a list of guests attending the selected party
+ * @returns {HTMLElement}
+ */
 function GuestList() {
   const $ul = document.createElement("ul");
+  //filter guests attending the selected party based on RSVPs
   const guestsAtParty = guests.filter((guest) =>
     rsvps.find(
       (rsvp) => rsvp.guestId === guest.id && rsvp.eventId === selectedParty.id
@@ -144,16 +164,21 @@ function render() {
       </section>
     </main>
   `;
-
+  /**
+   * Replaces placeholders with actual components
+   */
   $app.querySelector("PartyList").replaceWith(PartyList());
   $app.querySelector("SelectedParty").replaceWith(SelectedParty());
 }
 
+/**
+ * Initializes the application by fetching data and rendering the UI
+ */
 async function init() {
-  await getParties();
-  await getRsvps();
-  await getGuests();
+  await getParties(); // fetch all parties
+  await getRsvps(); //fetch RSVPs
+  await getGuests(); //Render the UI
   render();
 }
-
+//start the application
 init();
